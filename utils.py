@@ -22,7 +22,7 @@ def load_video_frame(path, frame_num):
         raise RuntimeError('fail to read frame{}'.format(frame_num))
 
 
-def load_whole_video(path, crop=True, x0=1500, y0=1080, w=2500, h=540, sample_rate=30):
+def load_whole_video(path, crop=True, start_frame = 0, x0=1500, y0=1080, w=2500, h=540, sample_rate=30):
     # Read and return whole video sequence as a numpy array
     cap = cv2.VideoCapture(path)
     if not crop:
@@ -32,13 +32,14 @@ def load_whole_video(path, crop=True, x0=1500, y0=1080, w=2500, h=540, sample_ra
         y0 = 0
     framerate = int(cap.get(5))
     framenum = int(cap.get(7))
-    video = np.zeros((int(framenum/sample_rate), h, w, 3))
-    cnt = 1
+    video = np.zeros((int(framenum/sample_rate), h, w, 3), dtype=np.uint8)
+    cnt = start_frame
     while(cap.isOpened()):
         cap.set(1, cnt)
         _, frame = cap.read()
         video[cnt] = frame[y0:y0+h, x0:x0+w, :]
         cnt += sample_rate
+        cap.set(1, cnt)
     
     return video
 

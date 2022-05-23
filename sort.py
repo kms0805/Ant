@@ -24,7 +24,7 @@ import argparse
 from filterpy.kalman import KalmanFilter
 import cv2
 import utils
-import seagull_detection as sdt
+#import seagull_detection as sdt
 
 
 
@@ -108,15 +108,21 @@ def associate_detections_to_trackers(detections,trackers,threshold):
   if(len(trackers)==0) or (len(detections)==0):
     return np.empty((0,2),dtype=int), np.arange(len(detections)), np.empty((0,5),dtype=int)
   cost_matrix = np.zeros((len(detections),len(trackers)),dtype=np.float32)
-  
+  cost_matrix_copy = cost_matrix.copy()
   for d,det in enumerate(detections):
     for t,trk in enumerate(trackers):
       cost_matrix[d,t] = np.linalg.norm(det-trk)
 
 
   matched_indices = linear_assignment(cost_matrix)
-
   matched_indices = np.hstack((matched_indices[0].reshape(-1,1),matched_indices[1].reshape(-1,1)))
+  # matched_indices = np.empty((0,2),dtype=int)
+  # for c in range(cost_matrix.shape[0]):
+  #     minidx = np.array((c,np.argmin(cost_matrix_copy[c], axis=0)))
+  #     matched_indices = np.vstack((matched_indices,minidx))
+  #     cost_matrix_copy[minidx[0],:] = 100000
+  #     cost_matrix_copy[:,minidx[1]] = 100000
+  #print(cost_matrix)
   matches = []
 
   unmatched_detections = []
@@ -179,7 +185,7 @@ class Sort(object):
     trks = np.ma.compress_rows(np.ma.masked_invalid(trks))
     for t in reversed(to_del):
       self.trackers.pop(t)
-    matched, unmatched_dets, unmatched_trks = associate_detections_to_trackers(dets,trks,30)
+    matched, unmatched_dets, unmatched_trks = associate_detections_to_trackers(dets,trks,50)
 
     #update matched trackers with assigned detections
     for t,trk in enumerate(self.trackers):
